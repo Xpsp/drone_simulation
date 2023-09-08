@@ -56,6 +56,7 @@ class JoystickParrot:
             
         if self.joystick.buttons['BACK']:
             self.reset_world()
+            self.reset.publish(Empty())
         
         cmd_vel = Twist()
         cmd_vel.linear.x = self.joystick.axes['LV']
@@ -66,13 +67,22 @@ class JoystickParrot:
         
     def reset_world(self):
         self.reset.publish(Empty())
+        self.hovercito()
         rospy.wait_for_service('/gazebo/reset_world')
         try:
             reset_world = rospy.ServiceProxy('/gazebo/reset_world', EmptySrv)
             reset_world()
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
-            
+        
+    def hovercito(self):
+        cmd_vel = Twist()
+        cmd_vel.linear.x = 0.0
+        cmd_vel.linear.y = 0.0
+        cmd_vel.linear.z = 0.0
+        cmd_vel.angular.z = 0.0
+        self.cmd_vel.publish(cmd_vel)
+        
 def main():
     rospy.init_node('joystick')
     # Available models: 'USB', 'Xbox360', 'XboxChinese', 'XboxOne', 'Pro'
